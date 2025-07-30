@@ -1,0 +1,214 @@
+<!DOCTYPE html> 
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestão de Gado</title>
+  <link rel="shortcut icon" href="https://cdn-icons-png.flaticon.com/128/6024/6024289.png" type="image/x-icon">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css">
+  <!-- Adicionando o link para os ícones do Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+  <div class="container py-4">
+    <h1 class="mb-4 text-center">Sistema de Gestão de Gado</h1>
+
+    <!-- Mensagem de Sucesso ou Erro -->
+    <div id="alertMessage" class="alert d-none" role="alert"></div>
+
+    <!-- Formulário de Cadastro -->
+    <form id="formCadastro" class="row g-3 mb-4">
+      <div class="col-md-2">
+        <label class="form-label">Número do Gado</label>
+        <input type="text" class="form-control" name="numero" required>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Data de Nascimento</label>
+        <input type="date" class="form-control" name="nascimento" required>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Peso (kg)</label>
+        <input type="number" class="form-control" name="peso" required min="1">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Gênero</label>
+        <select class="form-select" name="genero">
+          <option value="macho">Macho</option>
+          <option value="fêmea">Fêmea</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Status</label>
+        <select class="form-select" name="status">
+          <option value="ativo">Ativo</option>
+          <option value="vendido">Vendido</option>
+          <option value="óbito">Óbito</option>
+          <option value="bezerro">Bezerro</option>
+        </select>
+      </div>
+      <div class="col-md-2 d-flex align-items-end">
+        <button type="submit" class="btn btn-success w-100">Cadastrar</button>
+      </div>
+    </form>
+
+    <!-- Filtro -->
+    <div class="row mb-3">
+      <div class="col-md-4">
+        <label class="form-label">Filtrar por Status:</label>
+        <select id="filtroStatus" class="form-select">
+          <option value="">Todos</option>
+          <option value="ativo">Ativo</option>
+          <option value="vendido">Vendido</option>
+          <option value="óbito">Óbito</option>
+          <option value="bezerro">Bezerro</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Tabela -->
+    <table id="tabelaGado" class="table table-striped">
+      <thead>
+        <tr>
+          <th>Número</th>
+          <th>Nascimento</th>
+          <th>Peso</th>
+          <th>Gênero</th>
+          <th>Status</th>
+          <th>Exclusão</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+  </div>  
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.0/dist/jszip.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pdfmake@0.1.36/build/pdfmake.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pdfmake@0.1.36/build/vfs_fonts.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.3.6/js/dataTables.buttons.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.html5.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.print.min.js"></script>
+
+  <script>
+    let dados = JSON.parse(localStorage.getItem('gadoData')) || [];
+    
+    // Corrigir registros antigos sem campo genero
+    dados = dados.map(reg => ({ genero: '', ...reg }));
+
+    // Função para formatar a data para o formato "dd/mm/yyyy"
+    function formatarData(data) {
+      const partes = data.split('-');
+      return `${partes[2]}/${partes[1]}/${partes[0]}`;
+    }
+
+    const tabela = $('#tabelaGado').DataTable({
+      data: dados,
+      columns: [
+        { data: 'numero' },
+        { 
+          data: 'nascimento',
+          render: function (data) {
+            return formatarData(data); // Aplica a formatação de data
+          }
+        },
+        { data: 'peso' },
+        { data: 'genero' },
+        { data: 'status' },
+        {
+          data: null, // Coluna de ações
+          defaultContent: '<button class="btn btn-danger btn-sm"><i class="bi bi-trash"></i> Excluir</button>',
+          orderable: false
+        }
+      ],
+      dom: 'Bfrtip',
+      buttons: ['excelHtml5', 'pdfHtml5'],
+      language: {
+        decimal: ",",
+        thousands: ".",
+        sEmptyTable: "Nenhum dado disponível na tabela",
+        sInfo: "Mostrando de _START_ até _END_ de _TOTAL_ entradas",
+        sInfoEmpty: "Mostrando 0 até 0 de 0 entradas",
+        sInfoFiltered: "(filtrado de _MAX_ entradas no total)",
+        sInfoPostFix: "",
+        sLoadingRecords: "Carregando...",
+        sLengthMenu: "Mostrar _MENU_ entradas",
+        sProcessing: "Processando...",
+        sSearch: "Buscar:",
+        sZeroRecords: "Nenhum registro encontrado",
+        oPaginate: {
+          sFirst: "Primeiro",
+          sPrevious: "Anterior",
+          sNext: "Próximo",
+          sLast: "Último"
+        },
+        oAria: {
+          sSortAscending: ": ativar para ordenar colunas de forma crescente",
+          sSortDescending: ": ativar para ordenar colunas de forma decrescente"
+        }
+      }
+    });
+
+    function atualizarTabela() {
+      tabela.clear().rows.add(filtrarDados()).draw();
+    }
+
+    function filtrarDados() {
+      const filtro = $('#filtroStatus').val();
+      return filtro ? dados.filter(d => d.status === filtro) : dados;
+    }
+
+    $('#formCadastro').on('submit', function (e) {
+      e.preventDefault();
+      const form = $(this).serializeArray();
+      const novoGado = {};
+      form.forEach(campo => novoGado[campo.name] = campo.value);
+      
+      // Adicionando ID único
+      novoGado.id = Date.now();
+
+      dados.push(novoGado);
+      localStorage.setItem('gadoData', JSON.stringify(dados));
+      
+      // Mensagem de sucesso
+      mostrarMensagem('Gado cadastrado com sucesso!', 'success');
+      
+      atualizarTabela();
+      this.reset();
+    });
+
+    $('#filtroStatus').on('change', atualizarTabela);
+
+    // Excluir gado
+    $('#tabelaGado tbody').on('click', 'button', function () {
+      const row = tabela.row($(this).parents('tr'));
+      const data = row.data();
+
+      // Remover o item
+      dados = dados.filter(gado => gado.id !== data.id);
+      localStorage.setItem('gadoData', JSON.stringify(dados));
+
+      // Mensagem de sucesso
+      mostrarMensagem('Gado excluído com sucesso!', 'danger');
+      
+      atualizarTabela();
+    });
+
+    // Função para mostrar mensagens
+    function mostrarMensagem(mensagem, tipo) {
+      const alertMessage = $('#alertMessage');
+      alertMessage.text(mensagem);
+      alertMessage.removeClass('d-none alert-success alert-danger').addClass(`alert-${tipo}`);
+      setTimeout(() => {
+        alertMessage.addClass('d-none');
+      }, 3000);
+    }
+
+    atualizarTabela();
+  </script>
+</body>
+</html>
