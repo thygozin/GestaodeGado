@@ -1,214 +1,645 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Gestão de Gado</title>
-  <link rel="shortcut icon" href="https://cdn-icons-png.flaticon.com/128/6024/6024289.png" type="image/x-icon">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css">
-  <!-- Adicionando o link para os ícones do Bootstrap -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="shortcut icon" href="https://cdn-icons-png.flaticon.com/128/6024/6024289.png" type="image/x-icon" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    body {
+      min-height: 100vh;
+      margin: 0;
+      font-family: 'Roboto', sans-serif;
+      background: #f5f7fa;
+      display: flex;
+      flex-direction: row;
+      overflow-x: hidden;
+    }
+
+    aside {
+      width: 260px;
+      background: #1e7e34;
+      color: #fff;
+      padding: 2rem 1.5rem;
+      position: fixed;
+      top: 0; bottom: 0; left: 0;
+      box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+      z-index: 1030;
+      transition: transform 0.3s ease;
+    }
+
+    aside h2 {
+      font-weight: 700;
+      font-size: 1.8rem;
+      margin-bottom: 2rem;
+      letter-spacing: 1.2px;
+      user-select: none;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.25);
+    }
+
+    aside .nav-link {
+      color: #e2f0d9;
+      font-size: 1.1rem;
+      margin-bottom: 1rem;
+      padding: 0.5rem 0.75rem;
+      border-radius: 0.4rem;
+      transition: background 0.25s, color 0.25s;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    aside .nav-link:hover, aside .nav-link:focus {
+      background: #145c22;
+      color: #cdeac0;
+      text-decoration: none;
+      box-shadow: inset 3px 0 0 #ffc107;
+    }
+
+    main {
+      margin-left: 260px;
+      flex-grow: 1;
+      padding: 3rem 3rem 4rem 3rem;
+      background: white;
+      min-height: 100vh;
+      box-shadow: inset 0 0 20px #eaeaea;
+      transition: margin-left 0.3s ease;
+    }
+
+    @media (max-width: 767.98px) {
+      main {
+        margin-left: 0;
+        padding: 1.5rem 1.5rem 3rem 1.5rem;
+      }
+    }
+
+    #btnToggleSidebar {
+      display: none;
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      z-index: 1100;
+      background: #1e7e34;
+      border: none;
+      color: white;
+      padding: 0.4rem 0.6rem;
+      border-radius: 0.3rem;
+      font-size: 1.5rem;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      transition: background 0.3s;
+    }
+
+    #btnToggleSidebar:hover {
+      background: #145c22;
+    }
+
+    @media (max-width: 767.98px) {
+      #btnToggleSidebar {
+        display: block;
+      }
+    }
+
+    h1 {
+      font-weight: 700;
+      color: #1e7e34;
+      text-align: center;
+      margin-bottom: 2.5rem;
+      letter-spacing: 0.05em;
+      user-select: none;
+    }
+
+    #formCadastro .form-label {
+      font-weight: 600;
+      color: #333;
+      user-select: none;
+    }
+
+    #formCadastro .form-control,
+    #formCadastro .form-select {
+      border-radius: 0.4rem;
+      border: 1.5px solid #ccc;
+      transition: border-color 0.3s;
+      font-size: 1rem;
+      padding: 0.4rem 0.6rem;
+    }
+
+    #formCadastro .form-control:focus,
+    #formCadastro .form-select:focus {
+      border-color: #198754;
+      box-shadow: 0 0 8px rgba(25, 135, 84, 0.4);
+      outline: none;
+    }
+
+    #formCadastro button {
+      font-weight: 700;
+      font-size: 1.1rem;
+      padding: 0.5rem 1.2rem;
+      border-radius: 0.5rem;
+      box-shadow: 0 4px 6px rgba(25,135,84,0.4);
+      transition: background 0.3s, box-shadow 0.3s;
+    }
+
+    #formCadastro button:hover {
+      background-color: #146c2b;
+      box-shadow: 0 6px 10px rgba(20,108,43,0.6);
+    }
+
+    @media (max-width: 575.98px) {
+      #formCadastro .col-md-2,
+      #formCadastro .col-md-4 {
+        flex: 1 0 100% !important;
+      }
+    }
+
+    table.dataTable {
+      border-radius: 0.5rem;
+      overflow: hidden;
+      box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+      font-size: 0.9rem;
+    }
+
+    table.dataTable thead th {
+      background-color: #198754;
+      color: white;
+      font-weight: 600;
+      user-select: none;
+    }
+
+    table.dataTable tbody tr:hover {
+      background-color: #d9f7be !important;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    table.dataTable tbody td {
+      vertical-align: middle;
+    }
+
+    .btn-danger {
+      background-color: #dc3545;
+      border-color: #dc3545;
+      transition: background-color 0.3s ease;
+      padding: 0.2rem 0.5rem;
+      font-size: 0.9rem;
+    }
+
+    .btn-danger:hover {
+      background-color: #a72c37;
+      border-color: #a72c37;
+    }
+
+    .table-responsive {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    #graficos {
+      margin-top: 3rem;
+      background: #e6f4ea;
+      border-radius: 0.6rem;
+      padding: 1.5rem 1.8rem;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.06);
+    }
+
+    #graficos h4 {
+      color: #145c22;
+      font-weight: 600;
+      margin-bottom: 1.2rem;
+      user-select: none;
+      text-align: center;
+    }
+
+    #graficoTipo {
+      max-width: 400px;
+      margin: 0 auto;
+      display: block;
+    }
+
+    .alert {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 1100;
+      transition: opacity 0.5s;
+    }
+
+    .modal-header {
+      background-color: #198754;
+      color: white;
+    }
+
+    /* Estilos para o status */
+    .status-ativo {
+      color: green;
+      font-weight: bold;
+    }
+
+    .status-vendido {
+      color: red;
+      font-weight: bold;
+    }
+
+    .status-obito {
+      color: yellow; /* Alterado para amarelo */
+      font-weight: bold;
+    }
+
+    /* Estilos para as contagens de gado */
+    .contador-gado {
+      display: flex;
+      justify-content: center;
+      margin-top: 20px;
+    }
+
+    .contador {
+      margin: 0 15px;
+      text-align: center;
+      font-size: 1.2rem; /* Diminuindo a fonte */
+      font-weight: bold;
+    }
+  </style>
 </head>
-<body class="bg-light">
-  <div class="container py-4">
-    <h1 class="mb-4 text-center">Sistema de Gestão de Gado</h1>
+<body>
+  <button id="btnToggleSidebar" aria-label="Abrir menu">
+    <i class="bi bi-list"></i>
+  </button>
 
-    <!-- Mensagem de Sucesso ou Erro -->
-    <div id="alertMessage" class="alert d-none" role="alert"></div>
+  <aside id="sidebar" role="navigation" aria-label="Menu principal">
+    <h2>Gestão de Gado</h2>
+    <nav class="nav flex-column">
+      <a class="nav-link" href="#cadastro" title="Ir para cadastro">🐮 Cadastro</a>
+      <a class="nav-link" href="#tabela" title="Ir para tabela">📋 Tabela</a>
+      <a class="nav-link" href="#graficos" title="Ir para gráficos">📊 Gráficos</a>
+      <a class="nav-link" href="#" onclick="imprimir()" title="Imprimir tabela">🖨️ Imprimir</a>
+      <a class="nav-link" href="#" onclick="exportarExcel()" title="Exportar para Excel">📥 Exportar Excel</a>
+    </nav>
+  </aside>
 
-    <!-- Formulário de Cadastro -->
-    <form id="formCadastro" class="row g-3 mb-4">
-      <div class="col-md-2">
-        <label class="form-label">Número do Gado</label>
-        <input type="text" class="form-control" name="numero" required>
-      </div>
-      <div class="col-md-2">
-        <label class="form-label">Data de Nascimento</label>
-        <input type="date" class="form-control" name="nascimento" required>
-      </div>
-      <div class="col-md-2">
-        <label class="form-label">Peso (kg)</label>
-        <input type="number" class="form-control" name="peso" required min="1">
-      </div>
-      <div class="col-md-2">
-        <label class="form-label">Gênero</label>
-        <select class="form-select" name="genero">
-          <option value="macho">Macho</option>
-          <option value="fêmea">Fêmea</option>
-        </select>
-      </div>
-      <div class="col-md-2">
-        <label class="form-label">Status</label>
-        <select class="form-select" name="status">
-          <option value="ativo">Ativo</option>
-          <option value="vendido">Vendido</option>
-          <option value="óbito">Óbito</option>
-          <option value="bezerro">Bezerro</option>
-        </select>
-      </div>
-      <div class="col-md-2 d-flex align-items-end">
-        <button type="submit" class="btn btn-success w-100">Cadastrar</button>
-      </div>
-    </form>
+  <main role="main">
+    <div class="container-fluid">
+      <h1>Sistema de Gestão de Gado</h1>
 
-    <!-- Filtro -->
-    <div class="row mb-3">
-      <div class="col-md-4">
-        <label class="form-label">Filtrar por Status:</label>
-        <select id="filtroStatus" class="form-select">
-          <option value="">Todos</option>
-          <option value="ativo">Ativo</option>
-          <option value="vendido">Vendido</option>
-          <option value="óbito">Óbito</option>
-          <option value="bezerro">Bezerro</option>
-        </select>
+      <section id="cadastro" aria-label="Formulário de cadastro de animais">
+        <form id="formCadastro" class="row g-3 mb-5" autocomplete="off">
+          <div class="col-md-2">
+            <label class="form-label" for="tipoAnimal">Tipo</label>
+            <select class="form-select" name="tipo" id="tipoAnimal" required onchange="atualizarVacas(); atualizarVacaMaeVisibility();">
+              <option value="vaca">Vaca</option>
+              <option value="bezerro">Bezerro</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label" for="numero">Número</label>
+            <input type="text" class="form-control" name="numero" id="numero" required />
+          </div>
+          <div class="col-md-2">
+            <label class="form-label" for="nascimento">Nascimento</label>
+            <input type="date" class="form-control" name="nascimento" id="nascimento" required />
+          </div>
+          <div class="col-md-2">
+            <label class="form-label" for="peso">Peso (kg)</label>
+            <input type="number" class="form-control" name="peso" id="peso" required min="1" />
+          </div>
+          <div class="col-md-2">
+            <label class="form-label" for="genero">Sexo</label>
+            <select class="form-select" name="genero" id="genero" required>
+              <option value="macho">Macho</option>
+              <option value="fêmea">Fêmea</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label" for="status">Status</label>
+            <select class="form-select" name="status" id="status" required>
+              <option value="ativo">Ativo(a)</option>
+              <option value="vendido">Vendido(a)</option>
+              <option value="óbito">Óbito</option>
+            </select>
+          </div>
+          <div class="col-md-4" id="divVacaMae" style="display: none;">
+            <label class="form-label" for="vacaMae">Vaca-Mãe</label>
+            <select class="form-select" name="vacaMae" id="vacaMae">
+              <option value="">Selecione uma vaca</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label" for="eventoReprodutivo">Evento Reprodutivo</label>
+            <select class="form-select" name="eventoReprodutivo" id="eventoReprodutivo">
+              <option value="nenhum">Nenhum</option>
+              <option value="parto">Parto</option>
+              <option value="aborto">Aborto</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label" for="condicao">Condição</label>
+            <select class="form-select" name="condicao" id="condicao" required>
+              <option value="nenhum">Nenhum(a)</option>
+              <option value="excelente">Excelente</option>
+              <option value="intermediária">Intermediária</option>
+              <option value="doente">Doente</option>
+              <option value="estado_grave">Estado Grave</option>
+            </select>
+          </div>
+          <div class="col-md-2 d-flex align-items-end">
+            <button type="submit" class="btn btn-success w-100" aria-label="Cadastrar animal">Cadastrar</button>
+          </div>
+        </form>
+      </section>
+
+      <section id="tabela" aria-label="Tabela de animais">
+        <div class="table-responsive">
+          <table id="tabelaGado" class="table table-striped table-hover">
+            <thead>
+              <tr>
+                <th>Número</th>
+                <th>Nascimento</th>
+                <th>Peso (Kg)</th>
+                <th>Gênero</th>
+                <th>Status</th>
+                <th>Vaca-Mãe</th>
+                <th>Evento</th>
+                <th>Condição</th>
+                <th>Histórico</th>
+                <th>Excluir</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="graficos" class="mt-5" aria-label="Gráficos de distribuição">
+        <h4>Distribuição por Tipo</h4>
+        <canvas id="graficoTipo"></canvas>
+      </section>
+
+      <section class="contador-gado">
+        <div class="contador" id="contadorBoi">Boi: 0</div>
+        <div class="contador" id="contadorVaca">Vaca: 0</div>
+        <div class="contador" id="contadorBezerroMacho">Bezerro Macho: 0</div>
+        <div class="contador" id="contadorBezerroFemea">Bezerro Fêmea: 0</div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Modal de confirmação de exclusão -->
+  <div class="modal fade" id="modalExcluir" tabindex="-1" aria-labelledby="modalExcluirLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalExcluirLabel">Confirmação de Exclusão</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <p>Você tem certeza que deseja excluir este animal?</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary w-100 me-2" data-bs-dismiss="modal" style="padding: 10px 20px; font-size: 18px;">Cancelar</button>
+          <button type="button" class="btn btn-danger w-100" id="confirmarExcluir" style="padding: 10px 20px; font-size: 18px;">Excluir</button>
+        </div>
       </div>
     </div>
+  </div>
 
-    <!-- Tabela -->
-    <table id="tabelaGado" class="table table-striped">
-      <thead>
-        <tr>
-          <th>Número</th>
-          <th>Nascimento</th>
-          <th>Peso</th>
-          <th>Gênero</th>
-          <th>Status</th>
-          <th>Exclusão</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-
-  </div>  
-
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
   <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.0/dist/jszip.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/pdfmake@0.1.36/build/pdfmake.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/pdfmake@0.1.36/build/vfs_fonts.js"></script>
-  <script src="https://cdn.datatables.net/buttons/2.3.6/js/dataTables.buttons.min.js"></script>
-  <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.html5.min.js"></script>
-  <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.print.min.js"></script>
-
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script>
-    let dados = JSON.parse(localStorage.getItem('gadoData')) || [];
-    
-    // Corrigir registros antigos sem campo genero
-    dados = dados.map(reg => ({ genero: '', ...reg }));
+    const btnToggleSidebar = document.getElementById('btnToggleSidebar');
+    const sidebar = document.getElementById('sidebar');
+    btnToggleSidebar.addEventListener('click', () => {
+      sidebar.classList.toggle('active');
+    });
 
-    // Função para formatar a data para o formato "dd/mm/yyyy"
+    let dados = JSON.parse(localStorage.getItem("gado")) || [];
+    let gadoParaExcluir = null; // Variável para armazenar o gado a ser excluído
+
+    function salvarLocal() {
+      localStorage.setItem("gado", JSON.stringify(dados));
+    }
+
     function formatarData(data) {
-      const partes = data.split('-');
+      const partes = data.split("-");
       return `${partes[2]}/${partes[1]}/${partes[0]}`;
     }
 
-    const tabela = $('#tabelaGado').DataTable({
-      data: dados,
-      columns: [
-        { data: 'numero' },
-        { 
-          data: 'nascimento',
-          render: function (data) {
-            return formatarData(data); // Aplica a formatação de data
+    function atualizarTabela() {
+      const tabelaBody = $("#tabelaGado tbody");
+      tabelaBody.empty();
+      dados.forEach((d, index) => {
+        const generoExibido = d.genero === "fêmea" ? (d.tipo === "bezerro" ? "Bezerra" : "Vaca") : (d.tipo === "bezerro" ? "Bezerro" : "Boi");
+        const btnHistorico = `<a href="#" class="btn btn-info btn-sm" aria-label="Ver histórico do animal"><i class="bi bi-journal-text"></i></a>`;
+        const statusClass = d.status === "ativo" ? "status-ativo" : d.status === "vendido" ? "status-vendido" : "status-obito";
+        const row = `<tr>
+          <td>${d.numero}</td>
+          <td>${formatarData(d.nascimento)}</td>
+          <td>${d.peso}</td>
+          <td>${generoExibido}</td>
+          <td class="${statusClass}">${d.status}</td>
+          <td>${d.vacaMae || "-"}</td>
+          <td>${d.eventoReprodutivo || "-"}</td>
+          <td>${d.condicao || "-"}</td>
+          <td class="text-center">${btnHistorico}</td>
+          <td><button class="btn btn-danger btn-sm" onclick="prepararExclusao('${d.numero}')" aria-label="Excluir animal"><i class="bi bi-trash"></i></button></td>
+        </tr>`;
+        tabelaBody.append(row);
+      });
+
+      atualizarContadores(); // Atualiza contadores após atualizar a tabela
+    }
+
+    function atualizarContadores() {
+      const contadores = {
+        boi: 0,
+        vaca: 0,
+        bezerroMacho: 0,
+        bezerroFemea: 0
+      };
+
+      dados.forEach(d => {
+        if (d.tipo === "vaca") {
+          if (d.genero === "macho") {
+            contadores.boi++; // Contar como boi
+          } else {
+            contadores.vaca++; // Contar como vaca
           }
-        },
-        { data: 'peso' },
-        { data: 'genero' },
-        { data: 'status' },
-        {
-          data: null, // Coluna de ações
-          defaultContent: '<button class="btn btn-danger btn-sm"><i class="bi bi-trash"></i> Excluir</button>',
-          orderable: false
+        } else if (d.tipo === "bezerro") {
+          if (d.genero === "macho") {
+            contadores.bezerroMacho++; // Contar como bezerro macho
+          } else {
+            contadores.bezerroFemea++; // Contar como bezerra fêmea
+          }
         }
-      ],
-      dom: 'Bfrtip',
-      buttons: ['excelHtml5', 'pdfHtml5'],
-      language: {
-        decimal: ",",
-        thousands: ".",
-        sEmptyTable: "Nenhum dado disponível na tabela",
-        sInfo: "Mostrando de _START_ até _END_ de _TOTAL_ entradas",
-        sInfoEmpty: "Mostrando 0 até 0 de 0 entradas",
-        sInfoFiltered: "(filtrado de _MAX_ entradas no total)",
-        sInfoPostFix: "",
-        sLoadingRecords: "Carregando...",
-        sLengthMenu: "Mostrar _MENU_ entradas",
-        sProcessing: "Processando...",
-        sSearch: "Buscar:",
-        sZeroRecords: "Nenhum registro encontrado",
-        oPaginate: {
-          sFirst: "Primeiro",
-          sPrevious: "Anterior",
-          sNext: "Próximo",
-          sLast: "Último"
-        },
-        oAria: {
-          sSortAscending: ": ativar para ordenar colunas de forma crescente",
-          sSortDescending: ": ativar para ordenar colunas de forma decrescente"
-        }
+      });
+
+      // Atualiza os elementos de contagem
+      document.getElementById('contadorBoi').innerText = `Boi: ${contadores.boi}`;
+      document.getElementById('contadorVaca').innerText = `Vaca: ${contadores.vaca}`;
+      document.getElementById('contadorBezerroMacho').innerText = `Bezerro Macho: ${contadores.bezerroMacho}`;
+      document.getElementById('contadorBezerroFemea').innerText = `Bezerro Fêmea: ${contadores.bezerroFemea}`;
+    }
+
+    function prepararExclusao(numero) {
+      gadoParaExcluir = numero; // Armazenar o número do gado para exclusão
+      const modalExcluir = new bootstrap.Modal(document.getElementById('modalExcluir'));
+      modalExcluir.show();
+    }
+
+    document.getElementById('confirmarExcluir').addEventListener('click', function() {
+      if (gadoParaExcluir) {
+        dados = dados.filter(d => d.numero !== gadoParaExcluir);
+        salvarLocal();
+        atualizarTabela();
+        atualizarGrafico();
+        mostrarMensagem('success', 'Animal excluído com sucesso!');
+        
+        gadoParaExcluir = null; // Limpar a variável após a exclusão
+        const modalExcluir = bootstrap.Modal.getInstance(document.getElementById('modalExcluir'));
+        modalExcluir.hide(); // Fechar o modal
       }
     });
 
-    function atualizarTabela() {
-      tabela.clear().rows.add(filtrarDados()).draw();
+    function atualizarVacas() {
+      const vacaMaeSelect = document.getElementById('vacaMae');
+      vacaMaeSelect.innerHTML = '<option value="">Selecione uma vaca</option>';
+      const vacasDisponiveis = dados.filter(d => d.tipo === 'vaca');
+      vacasDisponiveis.forEach(vaca => {
+        vacaMaeSelect.innerHTML += `<option value="${vaca.numero}">${vaca.numero}</option>`;
+      });
     }
 
-    function filtrarDados() {
-      const filtro = $('#filtroStatus').val();
-      return filtro ? dados.filter(d => d.status === filtro) : dados;
+    function atualizarVacaMaeVisibility() {
+      const tipoAnimalSelect = document.getElementById('tipoAnimal');
+      const vacaMaeDiv = document.getElementById('divVacaMae');
+      vacaMaeDiv.style.display = tipoAnimalSelect.value === 'bezerro' ? 'block' : 'none';
+      if (tipoAnimalSelect.value !== 'bezerro') {
+        document.getElementById('vacaMae').value = '';
+      }
     }
 
-    $('#formCadastro').on('submit', function (e) {
+    document.addEventListener('DOMContentLoaded', atualizarVacaMaeVisibility);
+
+    $("#formCadastro").on("submit", function (e) {
       e.preventDefault();
-      const form = $(this).serializeArray();
-      const novoGado = {};
-      form.forEach(campo => novoGado[campo.name] = campo.value);
-      
-      // Adicionando ID único
-      novoGado.id = Date.now();
+      const formData = new FormData(this);
+      const novo = Object.fromEntries(formData.entries());
 
-      dados.push(novoGado);
-      localStorage.setItem('gadoData', JSON.stringify(dados));
-      
-      // Mensagem de sucesso
-      mostrarMensagem('Gado cadastrado com sucesso!', 'success');
-      
+      if (dados.some(d => d.numero === novo.numero)) {
+        alert("Número já cadastrado. Use outro número.");
+        return;
+      }
+
+      if (novo.tipo === "bezerro" && novo.vacaMae) {
+        const vacaMae = dados.find(d => d.numero === novo.vacaMae);
+        if (vacaMae) {
+          novo.vacaMae = vacaMae.numero;
+        }
+      }
+
+      dados.push(novo);
+      salvarLocal();
       atualizarTabela();
+      atualizarGrafico();
+      mostrarMensagem('success', 'Animal cadastrado com sucesso!');
+      location.reload();
       this.reset();
+      atualizarVacas();
     });
 
-    $('#filtroStatus').on('change', atualizarTabela);
+    function imprimir() {
+      window.print();
+    }
 
-    // Excluir gado
-    $('#tabelaGado tbody').on('click', 'button', function () {
-      const row = tabela.row($(this).parents('tr'));
-      const data = row.data();
+    function exportarExcel() {
+      const dadosFormatados = dados.map(d => ({
+        "Número": d.numero,
+        "Nascimento": formatarData(d.nascimento),
+        "Peso (Kg)": d.peso,
+        "Gênero": d.genero === 'fêmea' ? (d.tipo === 'bezerro' ? 'Bezerra' : 'Vaca') : (d.tipo === 'bezerro' ? 'Bezerro' : 'Boi'),
+        "Status": d.status,
+        "Vaca-Mãe": d.vacaMae || "-",
+        "Evento Reprodutivo": d.eventoReprodutivo || "-",
+        "Condição": d.condicao || "-",
+      }));
 
-      // Remover o item
-      dados = dados.filter(gado => gado.id !== data.id);
-      localStorage.setItem('gadoData', JSON.stringify(dados));
+      const ws = XLSX.utils.json_to_sheet(dadosFormatados, { origin: "A1" });
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Gado");
 
-      // Mensagem de sucesso
-      mostrarMensagem('Gado excluído com sucesso!', 'danger');
-      
-      atualizarTabela();
-    });
+      // Autoajustar colunas
+      const larguraMaxima = dadosFormatados.reduce((larguras, obj) => {
+        Object.entries(obj).forEach(([chave, valor], i) => {
+          const largura = valor ? valor.toString().length : 10;
+          larguras[i] = Math.max(larguras[i] || chave.length, largura);
+        });
+        return larguras;
+      }, []);
 
-    // Função para mostrar mensagens
-    function mostrarMensagem(mensagem, tipo) {
-      const alertMessage = $('#alertMessage');
-      alertMessage.text(mensagem);
-      alertMessage.removeClass('d-none alert-success alert-danger').addClass(`alert-${tipo}`);
+      ws["!cols"] = larguraMaxima.map(w => ({ wch: w + 2 }));
+
+      XLSX.writeFile(wb, "Relatorio_Gado.xlsx");
+    }
+
+    function atualizarGrafico() {
+      const tipos = { vaca: 0, bezerro: 0 };
+      dados.forEach(d => { tipos[d.tipo] = (tipos[d.tipo] || 0) + 1; });
+      const ctx = document.getElementById('graficoTipo').getContext('2d');
+      if (window.grafico) window.grafico.destroy();
+      window.grafico = new Chart(ctx, {
+        type: 'pie',
+        data: {
+          labels: ["Vacas", "Bezerros"],
+          datasets: [{ data: [tipos.vaca, tipos.bezerro], backgroundColor: ["#198754", "#ffc107"] }]
+        },
+        options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+      });
+    }
+
+    function mostrarMensagem(tipo, mensagem) {
+      const msgBox = document.createElement('div');
+      msgBox.className = `alert alert-${tipo}`;
+      msgBox.innerText = mensagem;
+      document.body.prepend(msgBox);
       setTimeout(() => {
-        alertMessage.addClass('d-none');
+        msgBox.remove();
       }, 3000);
     }
 
-    atualizarTabela();
+    $(document).ready(function () {
+      atualizarTabela();
+      atualizarGrafico();
+      $('#tabelaGado').DataTable({
+        lengthChange: false,
+        pageLength: 100, // Alterado para 100 por página
+        info: true, // Ativar informações de página
+        language: {
+          "paginate": {
+            "previous": "Anterior",
+            "next": "Próximo"
+          },
+          "search": "Pesquisar:",
+          "lengthMenu": "Mostrar _MENU_ registros",
+          "zeroRecords": "Nenhum registro encontrado",
+          "infoEmpty": "Nenhum registro disponível",
+          "infoFiltered": "(filtrado de _MAX_ total de registros)",
+          "info": "Página _PAGE_ de _PAGES_" // Exibe a informação da página atual
+        },
+        columnDefs: [
+          { orderable: false, targets: [8, 9] }
+        ],
+        pagingType: "simple" // Mostra apenas "Anterior" e "Próximo"
+      });
+    });
   </script>
 </body>
 </html>
